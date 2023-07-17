@@ -16,7 +16,7 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void createUsersTable() {
-        String sqlNewTable = "create table nameTable " +
+        String sqlNewTable = "create table if not exists nameTable " +
                 "(id bigint auto_increment primary key, " +
                 "name varchar(64) not null, " +
                 "lastname varchar(64) not null, " +
@@ -28,7 +28,7 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void dropUsersTable() {
-        String sqlDropTable = "drop table nameTable;";
+        String sqlDropTable = "drop table if exists nameTable;";
         try (Statement statement = connection.createStatement()) {
             statement.execute(sqlDropTable);
         } catch (SQLException e) {
@@ -49,9 +49,10 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void removeUserById(long id) {
-        String sqlRemoveUser = String.format("delete from nameTable where id = %d;", id);
-        try (Statement statement = connection.createStatement()){
-            statement.execute(sqlRemoveUser);
+        String sqlRemoveUser = "delete from nameTable where id = ?;";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlRemoveUser)){
+            preparedStatement.setLong(1, id);
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
